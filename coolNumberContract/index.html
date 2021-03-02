@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" concept='IE=edge'>
+        <meta name='viewport' content='width=device-width, initial-scale=1'>
+
+        <!-- how to interact with smart contract with web3 -->
+        <title>coolNumberContract</title>
+
+    </head>
+
+    <body>
+        <h1>cool Number contract</h1>
+
+        <button onclick="printCoolNumber();">Print cool Number</button>
+        <button onclick="changeCoolNumber();">Change cool Number</button>
+
+        <p>Status: </p><span id='Status'>Loading...</span>
+
+        <!-- web3 and Javascript below -->
+
+        <script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js/dist/web3.min.js"></script>
+
+        <script type='text/Javascript'>
+            // all the code connecting ethereum below
+                // check if web3 provider
+            window.addEventListener('load', function () {
+                if (window.ethereum) {
+                    console.log("Web3 Detected! ")
+                    window.web3 = new Web3(window.ethereum);
+                    window.ethereum.enable();
+
+                    window.contract = loadContract();
+
+                    updateStatus('Ready!');
+    
+                } else {
+                    // if not do something
+                    alert(" You need a web3 provider. ");
+                }
+            })
+
+            // tell if everything is good
+            function updateStatus( status ) {
+                const statusEl = document.getElementById('Status');
+                statusEl.innerHTML = status;
+                console.log(status);
+            }
+
+            // create an instance of the smart contract
+            function loadContract() {
+                return  new window.web3.eth.Contract(
+                                    [
+                    {
+                        "anonymous": false,
+                        "inputs": [
+                            {
+                                "indexed": false,
+                                "internalType": "uint256",
+                                "name": "previous_value",
+                                "type": "uint256"
+                            },
+                            {
+                                "indexed": false,
+                                "internalType": "uint256",
+                                "name": "coolNumber",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "changedCoolNumber",
+                        "type": "event"
+                    },
+                    {
+                        "inputs": [
+                            {
+                                "internalType": "uint256",
+                                "name": "_coolNumber",
+                                "type": "uint256"
+                            }
+                        ],
+                        "name": "setCoolNumber",
+                        "outputs": [],
+                        "stateMutability": "nonpayable",
+                        "type": "function"
+                    },
+                    {
+                        "inputs": [],
+                        "name": "coolNumber",
+                        "outputs": [
+                            {
+                                "internalType": "uint256",
+                                "name": "",
+                                "type": "uint256"
+                            }
+                        ],
+                        "stateMutability": "view",
+                        "type": "function"
+                    }
+                ], '0xe28869e7728cb8d742cffbec93ddf55e62ed493b');
+            }
+
+        </script>
+
+        <script type="text/Javascript">
+            function printCoolNumber() {
+                updateStatus('Fetching cool Number...');
+
+                const coolNumber = window.contract.methods.coolNumber().call().then(function(result) { 
+                    console.log(result);
+                    updateStatus("coolNumber: " + result ); // this code inside it work better like that
+                });
+            }
+
+            function changeCoolNumber() {
+                const value = Math.floor(Math.random() * 100);
+                updateStatus('Updating coolNumber with ' + value);
+
+                console.log(value);
+
+                // get the account of the user
+                window.web3.eth.getAccounts().then( function(result){
+                    account = result[0]
+                   console.log(account);
+                   window.contract.methods.setCoolNumber(value).send( { from: account} );
+                   updateStatus('Updated.')       
+                } );
+
+            }
+
+
+        </script>
+    </body>
+</html>
